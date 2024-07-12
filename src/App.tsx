@@ -56,7 +56,7 @@ function App() {
       title: "Current Price",
       dataIndex: "current_price",
       key: "current_price",
-      render: (item: any, record: any) => {
+      render: (item: any) => {
         return <div>{item + " " + selectedCurrency} </div>;
       },
     },
