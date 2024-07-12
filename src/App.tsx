@@ -76,9 +76,9 @@ function App() {
   }, [selectedCurrency, sorting]);
 
   return (
-    <>
+    <main>
       <section>
-        <Space direction="vertical" size={20}>
+        <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Space size={15}>
             <Select
               defaultValue="usd"
@@ -106,12 +106,12 @@ function App() {
             loading={loading}
             rowKey="id"
             pagination={tableParams.pagination}
-            style={{ width: "100vw" }}
+            style={{ width: "100" }}
             onChange={handleTableChange}
           />
         </Space>
       </section>
-    </>
+    </main>
   );
 }
 
