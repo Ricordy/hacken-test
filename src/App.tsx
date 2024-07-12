@@ -129,7 +129,7 @@ function App() {
   // UseEffect to fetch the API when the state is changed or after first loading the page
   useEffect(() => {
     fetch(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedCurrency}&order=market_cap_${sorting}&per_page=${tableParams.pagination?.pageSize}&page=${tableParams.pagination?.current}&sparkline=false`
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedCurrency}&order=market_cap_${sorting}&sparkline=false`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -142,7 +142,7 @@ function App() {
           coin2: data[1]?.name,
         });
       });
-  }, [selectedCurrency, sorting, tableParams.pagination]);
+  }, [selectedCurrency, sorting]);
 
   useEffect(() => {
     if (coinsToCompare.coin1MC > coinsToCompare.coin2MC) {
@@ -167,6 +167,7 @@ function App() {
           <Card style={{ width: "100%" }}>
             <Space>
               <Select
+                showSearch
                 placeholder="Choose the currency"
                 onChange={onChange1}
                 onSearch={onSearch}
