@@ -32,10 +32,16 @@ function App() {
   const [selectedCurrency, setSelectedCurrency] = useState("usd");
   const [sorting, setSorting] = useState("desc");
   const [loading, setLoading] = useState(true);
-  const [marketCapDiff, setMarketCapDiff] = useState(0.0);
+  const [stats, setStats] = useState({
+    diff: 0.0,
+    coin1Price2MC: 0.0,
+    coin1MC2P: 0.0,
+  });
   const [coinsToCompare, setCoinsToCompare] = useState({
     coin1: "",
     coin2: "",
+    coin1P: 0,
+    coin2P: 0,
     coin1MC: 0,
     coin2MC: 0,
   });
@@ -107,6 +113,7 @@ function App() {
         ...prev,
         coin1MC: Number(item[0].market_cap),
         coin1: item[0].name,
+        coin1P: item[0].current_price,
       }));
     }
   };
@@ -118,6 +125,7 @@ function App() {
         ...prev,
         coin2MC: Number(item[0].market_cap),
         coin2: item[0].name,
+        coin2P: item[0].current_price,
       }));
     }
   };
@@ -140,19 +148,41 @@ function App() {
           coin2MC: Number(data[1]?.market_cap),
           coin1: data[0]?.name,
           coin2: data[1]?.name,
+          coin1P: data[0]?.current_price,
+          coin2P: data[1]?.current_price,
         });
       });
   }, [selectedCurrency, sorting]);
 
   useEffect(() => {
     if (coinsToCompare.coin1MC > coinsToCompare.coin2MC) {
-      setMarketCapDiff(coinsToCompare.coin1MC / coinsToCompare.coin2MC);
+      setStats((prev) => ({
+        ...prev,
+        diff: coinsToCompare.coin1MC / coinsToCompare.coin2MC,
+        coin1Price2MC:
+          (coinsToCompare.coin1P *
+            ((coinsToCompare.coin2MC * 100) / coinsToCompare.coin1MC)) /
+          100,
+        coin1MC2P:
+          (coinsToCompare.coin1MC *
+            ((coinsToCompare.coin2P * 100) / coinsToCompare.coin1P)) /
+          100,
+      }));
     } else if (coinsToCompare.coin1MC < coinsToCompare.coin2MC) {
-      setMarketCapDiff(
-        -Math.abs(coinsToCompare.coin2MC / coinsToCompare.coin1MC)
-      );
+      setStats((prev) => ({
+        ...prev,
+        diff: -Math.abs(coinsToCompare.coin2MC / coinsToCompare.coin1MC),
+        coin1Price2MC:
+          (coinsToCompare.coin1P *
+            ((coinsToCompare.coin2MC * 100) / coinsToCompare.coin1MC)) /
+          100,
+        coin1MC2P:
+          (coinsToCompare.coin1MC *
+            ((coinsToCompare.coin2P * 100) / coinsToCompare.coin1P)) /
+          100,
+      }));
     } else {
-      setMarketCapDiff(0);
+      setStats((prev) => ({ ...prev, diff: 0 }));
     }
 
     return () => {};
@@ -201,66 +231,120 @@ function App() {
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>Market cap comparasion</Title>
           <Card style={{ width: "100%" }}>
-            <Space>
-              <Select
-                showSearch
-                placeholder="Choose the currency"
-                onChange={onChange1}
-                onSearch={onSearch}
-                style={{ width: "200px" }}
-              >
-                {data.map((cryptocurrency: any) => {
-                  return (
-                    <Select.Option
-                      value={cryptocurrency.name}
-                      key={cryptocurrency.id}
-                    >
-                      {cryptocurrency.name.toString()}
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-              <Select
-                showSearch
-                placeholder="Choose the currency"
-                onChange={onChange2}
-                onSearch={onSearch}
-                style={{ width: "200px" }}
-              >
-                {data.map((cryptocurrency: any) => {
-                  return (
-                    <Select.Option
-                      value={cryptocurrency.name}
-                      key={cryptocurrency.id}
-                    >
-                      {cryptocurrency.name.toString()}
-                    </Select.Option>
-                  );
-                })}
-              </Select>
+            <Space direction="vertical">
+              <Space>
+                <Select
+                  showSearch
+                  placeholder="Choose the currency"
+                  onChange={onChange1}
+                  onSearch={onSearch}
+                  style={{ width: "200px" }}
+                >
+                  {data.map((cryptocurrency: any) => {
+                    return (
+                      <Select.Option
+                        value={cryptocurrency.name}
+                        key={cryptocurrency.id}
+                      >
+                        {cryptocurrency.name.toString()}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+                <Select
+                  showSearch
+                  placeholder="Choose the currency"
+                  onChange={onChange2}
+                  onSearch={onSearch}
+                  style={{ width: "200px" }}
+                >
+                  {data.map((cryptocurrency: any) => {
+                    return (
+                      <Select.Option
+                        value={cryptocurrency.name}
+                        key={cryptocurrency.id}
+                      >
+                        {cryptocurrency.name.toString()}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How many times{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}
+                  </text>{" "}
+                  market cap is {stats.diff > 0 ? "bigger" : "smaller"} than{" "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>
+                  ?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.diff}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    prefix={"x"}
+                    displayType="text"
+                    allowNegative
+                  />
+                </Title>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How much would{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}
+                  </text>{" "}
+                  worth with{" "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>{" "}
+                  market cap?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.coin1Price2MC}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    suffix={" " + selectedCurrency}
+                    displayType="text"
+                    allowNegative
+                  />
+                </Title>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How much would{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}'s
+                  </text>{" "}
+                  market cap be if{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}'s
+                  </text>
+                  {"  "}price is the same as{"  "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>{" "}
+                  ?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.coin1MC2P}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    suffix={" " + selectedCurrency}
+                    displayType="text"
+                    allowNegative
+                    thousandSeparator=","
+                  />
+                </Title>
+              </Space>
             </Space>
-
-            <Title level={3}>
-              How many times{" "}
-              <text className={marketCapDiff > 0 ? "text-green" : "text-red"}>
-                {coinsToCompare.coin1}
-              </text>{" "}
-              market cap is {marketCapDiff > 0 ? "bigger" : "smaller"} than{" "}
-              <text className={marketCapDiff < 0 ? "text-green" : "text-red"}>
-                {coinsToCompare.coin2}
-              </text>
-              ?
-            </Title>
-            <Title>
-              <NumericFormat
-                value={marketCapDiff}
-                decimalScale={2}
-                decimalSeparator="."
-                prefix={"x"}
-                displayType="text"
-                allowNegative
-              />
-            </Title>
           </Card>
         </Space>
       </section>
@@ -350,9 +434,16 @@ function App() {
   const [sorting, setSorting] = useState("desc");
   const [loading, setLoading] = useState(true);
   const [marketCapDiff, setMarketCapDiff] = useState(0.0);
+   const [stats, setStats] = useState({
+    diff: 0.0,
+    coin1Price2MC: 0.0,
+    coin1MC2P: 0.0,
+  });
   const [coinsToCompare, setCoinsToCompare] = useState({
     coin1: "",
-    coin2:"",
+    coin2: "",
+    coin1P: 0,
+    coin2P: 0,
     coin1MC: 0,
     coin2MC: 0,
   });
@@ -416,7 +507,7 @@ function App() {
   };
 
   const onChange1 = (value: string) => {
-    const item = data.filter((i) => i.name === value);
+    const item = data.filter((i: any) => i.name === value) as any;
     console.log("item 0 : ", item[0]);
 
     if (item.length > 0) {
@@ -424,17 +515,19 @@ function App() {
         ...prev,
         coin1MC: Number(item[0].market_cap),
         coin1: item[0].name,
+        coin1P: item[0].current_price,
       }));
     }
   };
 
   const onChange2 = (value: string) => {
-    const item = data.filter((i) => i.name === value);
+    const item = data.filter((i: any) => i.name === value) as any;
     if (item.length > 0) {
       setCoinsToCompare((prev) => ({
         ...prev,
         coin2MC: Number(item[0].market_cap),
         coin2: item[0].name,
+        coin2P: item[0].current_price,
       }));
     }
   };
@@ -457,23 +550,46 @@ function App() {
           coin2MC: Number(data[1]?.market_cap),
           coin1: data[0]?.name,
           coin2: data[1]?.name,
+          coin1P: data[0]?.current_price,
+          coin2P: data[1]?.current_price,
         });
       });
   }, [selectedCurrency, sorting, tableParams.pagination]);
 
   useEffect(() => {
     if (coinsToCompare.coin1MC > coinsToCompare.coin2MC) {
-      setMarketCapDiff(coinsToCompare.coin1MC / coinsToCompare.coin2MC);
+      setStats((prev) => ({
+        ...prev,
+        diff: coinsToCompare.coin1MC / coinsToCompare.coin2MC,
+        coin1Price2MC:
+          (coinsToCompare.coin1P *
+            ((coinsToCompare.coin2MC * 100) / coinsToCompare.coin1MC)) /
+          100,
+        coin1MC2P:
+          (coinsToCompare.coin1MC *
+            ((coinsToCompare.coin2P * 100) / coinsToCompare.coin1P)) /
+          100,
+      }));
     } else if (coinsToCompare.coin1MC < coinsToCompare.coin2MC) {
-      setMarketCapDiff(
-        -Math.abs(coinsToCompare.coin2MC / coinsToCompare.coin1MC)
-      );
+      setStats((prev) => ({
+        ...prev,
+        diff: -Math.abs(coinsToCompare.coin2MC / coinsToCompare.coin1MC),
+        coin1Price2MC:
+          (coinsToCompare.coin1P *
+            ((coinsToCompare.coin2MC * 100) / coinsToCompare.coin1MC)) /
+          100,
+        coin1MC2P:
+          (coinsToCompare.coin1MC *
+            ((coinsToCompare.coin2P * 100) / coinsToCompare.coin1P)) /
+          100,
+      }));
     } else {
-      setMarketCapDiff(0);
+      setStats((prev) => ({ ...prev, diff: 0 }));
     }
 
     return () => {};
   }, [coinsToCompare.coin1MC, coinsToCompare.coin2MC]);
+
 
   // Returning HTML
   return (
@@ -518,65 +634,120 @@ function App() {
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>Market cap comparasion</Title>
           <Card style={{ width: "100%" }}>
-            <Space>
-              <Select
-                placeholder="Choose the currency"
-                onChange={onChange1}
-                onSearch={onSearch}
-                style={{ width: "200px" }}
-              >
-                {data.map((cryptocurrency) => {
-                  return (
-                    <Select.Option
-                      value={cryptocurrency.name}
-                      key={cryptocurrency.id}
-                    >
-                      {cryptocurrency.name.toString()}
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-              <Select
-                showSearch
-                placeholder="Choose the currency"
-                onChange={onChange2}
-                onSearch={onSearch}
-                style={{ width: "200px" }}
-              >
-                {data.map((cryptocurrency) => {
-                  return (
-                    <Select.Option
-                      value={cryptocurrency.name}
-                      key={cryptocurrency.id}
-                    >
-                      {cryptocurrency.name.toString()}
-                    </Select.Option>
-                  );
-                })}
-              </Select>
+            <Space direction="vertical">
+              <Space>
+                <Select
+                  showSearch
+                  placeholder="Choose the currency"
+                  onChange={onChange1}
+                  onSearch={onSearch}
+                  style={{ width: "200px" }}
+                >
+                  {data.map((cryptocurrency: any) => {
+                    return (
+                      <Select.Option
+                        value={cryptocurrency.name}
+                        key={cryptocurrency.id}
+                      >
+                        {cryptocurrency.name.toString()}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+                <Select
+                  showSearch
+                  placeholder="Choose the currency"
+                  onChange={onChange2}
+                  onSearch={onSearch}
+                  style={{ width: "200px" }}
+                >
+                  {data.map((cryptocurrency: any) => {
+                    return (
+                      <Select.Option
+                        value={cryptocurrency.name}
+                        key={cryptocurrency.id}
+                      >
+                        {cryptocurrency.name.toString()}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How many times{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}
+                  </text>{" "}
+                  market cap is {stats.diff > 0 ? "bigger" : "smaller"} than{" "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>
+                  ?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.diff}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    prefix={"x"}
+                    displayType="text"
+                    allowNegative
+                  />
+                </Title>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How much would{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}
+                  </text>{" "}
+                  worth with{" "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>{" "}
+                  market cap?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.coin1Price2MC}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    suffix={" " + selectedCurrency}
+                    displayType="text"
+                    allowNegative
+                  />
+                </Title>
+              </Space>
+              <Space direction="vertical">
+                <Title level={3}>
+                  How much would{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}'s
+                  </text>{" "}
+                  market cap be if{" "}
+                  <text className={stats.diff > 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin1}'s
+                  </text>
+                  {"  "}price is the same as{"  "}
+                  <text className={stats.diff < 0 ? "text-green" : "text-red"}>
+                    {coinsToCompare.coin2}
+                  </text>{" "}
+                  ?
+                </Title>
+                <Title>
+                  <NumericFormat
+                    value={stats.coin1MC2P}
+                    decimalScale={2}
+                    decimalSeparator="."
+                    suffix={" " + selectedCurrency}
+                    displayType="text"
+                    allowNegative
+                    thousandSeparator=","
+                  />
+                </Title>
+              </Space>
             </Space>
-
-            <Title level={3}>
-              How many times{" "}
-              <text className={marketCapDiff > 0 ? "text-green" : "text-red"}>
-                {coinsToCompare.coin1}
-              </text>{" "}
-              market cap is {marketCapDiff > 0 ? "bigger" : "smaller"} than{" "}
-              <text className={marketCapDiff < 0 ? "text-green" : "text-red"}>
-                {coinsToCompare.coin2}
-              </text>
-              ?
-            </Title>
-            <Title>
-              <NumericFormat
-                value={marketCapDiff}
-                decimalScale={2}
-                decimalSeparator="."
-                prefix={"x"}
-                displayType="text"
-                allowNegative
-              />
-            </Title>
           </Card>
         </Space>
       </section>
