@@ -38,7 +38,7 @@ function App() {
     },
   });
 
-  // Variables for the columns that defines rendenring logic and parameters to show
+  // Variable for the columns that defines rendenring logic and parameters to show
   const columns = [
     {
       title: "Name",
@@ -67,7 +67,7 @@ function App() {
     },
   ];
 
-  // Call back function for the Table component
+  // Callback function for the Table component
   const handleTableChange: TableProps["onChange"] = (
     pagination,
     filters,
@@ -89,6 +89,7 @@ function App() {
     setSorting(value);
   };
 
+  // UseEffect to fetch the API when the state is changed or after first loading the page
   useEffect(() => {
     fetch(
       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedCurrency}&order=market_cap_${sorting}&per_page=${tableParams.pagination?.pageSize}&page=${tableParams.pagination?.current}&sparkline=false`
@@ -100,6 +101,7 @@ function App() {
       });
   }, [selectedCurrency, sorting, tableParams.pagination]);
 
+  // Returning HTML
   return (
     <main>
       <section>
@@ -149,8 +151,7 @@ function App() {
 
 export default App;
 
-const code = `
-import React, { useEffect, useState } from "react";
+const code = `import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Select,
@@ -169,6 +170,7 @@ import "./App.css";
 
 const { Title } = Typography;
 
+// Type for the parameters that define the table
 interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: SorterResult<number>["field"];
@@ -177,6 +179,7 @@ interface TableParams {
 }
 
 function App() {
+  // STATE VARIABLES
   const [data, setData] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("usd");
   const [sorting, setSorting] = useState("desc");
@@ -189,6 +192,7 @@ function App() {
     },
   });
 
+  // Variable for the columns that defines rendenring logic and parameters to show
   const columns = [
     {
       title: "Name",
@@ -217,6 +221,7 @@ function App() {
     },
   ];
 
+  // Callback function for the Table component
   const handleTableChange: TableProps["onChange"] = (
     pagination,
     filters,
@@ -238,6 +243,7 @@ function App() {
     setSorting(value);
   };
 
+  // UseEffect to fetch the API when the state is changed or after first loading the page
   useEffect(() => {
     console.log("current page: ", tableParams.pagination?.current);
 
@@ -251,6 +257,7 @@ function App() {
       });
   }, [selectedCurrency, sorting, tableParams.pagination]);
 
+  // Returning HTML
   return (
     <main>
       <section>
@@ -283,19 +290,17 @@ function App() {
             loading={loading}
             rowKey="id"
             pagination={tableParams.pagination}
-            style={{ width: "100%" }}
+            style={{ width: "100" }}
             onChange={handleTableChange}
           />
         </Space>
       </section>
-      <CodeMirror
-        value={code}
-        options={{
-          mode: 'typescript',
-          theme: 'material',
-          lineNumbers: true,
-        }}
-      />
+      <section>
+        <Space direction="vertical" size={20} style={{ width: "100%" }}>
+          <Title level={2}>Coins & Markets</Title>
+          <Controlled value={code} extensions={[javascript({ jsx: true })]} />
+        </Space>
+      </section>
     </main>
   );
 }
