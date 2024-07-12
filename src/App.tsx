@@ -99,7 +99,7 @@ function App() {
   };
 
   const onChange1 = (value: string) => {
-    const item = data.filter((i) => i.name === value);
+    const item = data.filter((i: any) => i.name === value) as any;
     console.log("item 0 : ", item[0]);
 
     if (item.length > 0) {
@@ -112,7 +112,7 @@ function App() {
   };
 
   const onChange2 = (value: string) => {
-    const item = data.filter((i) => i.name === value);
+    const item = data.filter((i: any) => i.name === value) as any;
     if (item.length > 0) {
       setCoinsToCompare((prev) => ({
         ...prev,
@@ -172,7 +172,7 @@ function App() {
                 onSearch={onSearch}
                 style={{ width: "200px" }}
               >
-                {data.map((cryptocurrency) => {
+                {data.map((cryptocurrency: any) => {
                   return (
                     <Select.Option
                       value={cryptocurrency.name}
@@ -190,7 +190,7 @@ function App() {
                 onSearch={onSearch}
                 style={{ width: "200px" }}
               >
-                {data.map((cryptocurrency) => {
+                {data.map((cryptocurrency: any) => {
                   return (
                     <Select.Option
                       value={cryptocurrency.name}
