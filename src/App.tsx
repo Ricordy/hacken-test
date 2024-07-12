@@ -20,7 +20,7 @@ interface TableParams {
 function App() {
   const [data, setData] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("usd");
-  const [sorting, setSorting] = useState("asc");
+  const [sorting, setSorting] = useState("desc");
   const [loading, setLoading] = useState(true);
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
