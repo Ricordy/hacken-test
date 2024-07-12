@@ -16,7 +16,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import Controlled from "@uiw/react-codemirror";
 import { NumericFormat } from "react-number-format";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 // Type for the parameters that define the table
 interface TableParams {
@@ -163,6 +163,42 @@ function App() {
     <main>
       <section>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
+          <Title level={2}>Quick note</Title>
+          <Card style={{ width: "100%" }}>
+            <Space direction="vertical">
+              <Text>
+                In order to improve the "app" I decided to remove part of the
+                API parameters as well as add a market cap comparasion. As can
+                be seen below:
+              </Text>
+              <Controlled
+                value={paginationDiffCode}
+                height="150px"
+                maxWidth="95vw"
+                extensions={[javascript({ jsx: true })]}
+                editable={false}
+              />
+              <div>
+                I am leaving this note since I'm not sure if this was something
+                I could do. Not calling the API each time the pagination is used
+                allows for less calls thus faster user interaction/experience.
+                Therefore I decided to proceed this way but save a link for a
+                <a
+                  target="__blank"
+                  href="https://github.com/Ricordy/hacken-test/pull/2/commits/073ea6fcdb7d552de77343679e34de5a0af9d97c"
+                >
+                  {" "}
+                  GitHub Commit{" "}
+                </a>{" "}
+                that will show you the minimal differences made in the "app".
+              </div>
+              <div>Thanks!</div>
+            </Space>
+          </Card>
+        </Space>
+      </section>
+      <section>
+        <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>Market cap comparasion</Title>
           <Card style={{ width: "100%" }}>
             <Space>
@@ -266,7 +302,11 @@ function App() {
       <section>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>App source code</Title>
-          <Controlled value={code} extensions={[javascript({ jsx: true })]} />
+          <Controlled
+            value={code}
+            extensions={[javascript({ jsx: true })]}
+            editable={false}
+          />
         </Space>
       </section>
     </main>
@@ -275,9 +315,10 @@ function App() {
 
 export default App;
 
-const code = `import React, { useEffect, useState } from "react";
-import {
+const code = `import {
   Avatar,
+  Card,
+  GetProp,
   Select,
   Space,
   Table,
@@ -285,10 +326,14 @@ import {
   TableProps,
   Typography,
 } from "antd";
-import { SorterResult } from "antd/es/table/interface";
 import "./App.css";
+import { useEffect, useState } from "react";
+import { SorterResult } from "antd/es/table/interface";
+import { javascript } from "@codemirror/lang-javascript";
+import Controlled from "@uiw/react-codemirror";
+import { NumericFormat } from "react-number-format";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 // Type for the parameters that define the table
 interface TableParams {
@@ -435,6 +480,42 @@ function App() {
     <main>
       <section>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
+          <Title level={2}>Quick note</Title>
+          <Card style={{ width: "100%" }}>
+            <Space direction="vertical">
+              <Text>
+                In order to improve the "app" I decided to remove part of the
+                API parameters as well as add a market cap comparasion. As can
+                be seen below:
+              </Text>
+              <Controlled
+                value={paginationDiffCode}
+                height="150px"
+                maxWidth="95vw"
+                extensions={[javascript({ jsx: true })]}
+                editable={false}
+              />
+              <div>
+                I am leaving this note since I'm not sure if this was something
+                I could do. Not calling the API each time the pagination is used
+                allows for less calls thus faster user interaction/experience.
+                Therefore I decided to proceed this way but save a link for a
+                <a
+                  target="__blank"
+                  href="https://github.com/Ricordy/hacken-test/pull/2/commits/073ea6fcdb7d552de77343679e34de5a0af9d97c"
+                >
+                  {" "}
+                  GitHub Commit{" "}
+                </a>{" "}
+                that will show you the minimal differences made in the "app".
+              </div>
+              <div>Thanks!</div>
+            </Space>
+          </Card>
+        </Space>
+      </section>
+      <section>
+        <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>Market cap comparasion</Title>
           <Card style={{ width: "100%" }}>
             <Space>
@@ -537,7 +618,11 @@ function App() {
       <section>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
           <Title level={2}>App source code</Title>
-          <Controlled value={code} extensions={[javascript({ jsx: true })]} />
+          <Controlled
+            value={code}
+            extensions={[javascript({ jsx: true })]}
+            editable={false}
+          />
         </Space>
       </section>
     </main>
@@ -545,3 +630,38 @@ function App() {
 }
 
 export default App;`;
+
+const paginationDiffCode = `
+// Test guidelines fetch with pagination
+fetch(
+  \`https://api.coingecko.com/api/v3/coins/markets?vs_currency=\${selectedCurrency}&order=market_cap_\${sorting}&per_page=\${tableParams.pagination?.pageSize}&page=\${tableParams.pagination?.current}&sparkline=false\`
+)
+  .then((response) => response.json())
+  .then((data) => {
+    setData(data);
+    setLoading(false);
+    setCoinsToCompare({
+      coin1MC: Number(data[0]?.market_cap),
+      coin2MC: Number(data[1]?.market_cap),
+      coin1: data[0]?.name,
+      coin2: data[1]?.name,
+    });
+  });
+  
+  
+  // Suggested fetch without pagination
+fetch(
+  \`https://api.coingecko.com/api/v3/coins/markets?vs_currency=\${selectedCurrency}&order=market_cap_\${sorting}&sparkline=false\`
+)
+  .then((response) => response.json())
+  .then((data) => {
+    setData(data);
+    setLoading(false);
+    setCoinsToCompare({
+      coin1MC: Number(data[0]?.market_cap),
+      coin2MC: Number(data[1]?.market_cap),
+      coin1: data[0]?.name,
+      coin2: data[1]?.name,
+    });
+  });
+`;
