@@ -141,7 +141,7 @@ function App() {
       </section>
       <section>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
-          <Title level={2}>Coins & Markets</Title>
+          <Title level={2}>App source code</Title>
           <Controlled value={code} extensions={[javascript({ jsx: true })]} />
         </Space>
       </section>
