@@ -1,6 +1,7 @@
 import {
   GetProp,
   Select,
+  Space,
   Table,
   TablePaginationConfig,
   TableProps,
@@ -19,6 +20,7 @@ interface TableParams {
 function App() {
   const [data, setData] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("usd");
+  const [sorting, setSorting] = useState("asc");
   const [loading, setLoading] = useState(true);
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -58,38 +60,56 @@ function App() {
     setSelectedCurrency(value);
   };
 
+  const handleSortingChange = (value: string) => {
+    setSorting(value);
+  };
+
   useEffect(() => {
     fetch(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedCurrency}`
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedCurrency}&order=market_cap_${sorting}`
     )
       .then((response) => response.json())
       .then((data) => {
         setData(data);
         setLoading(false);
       });
-  }, [selectedCurrency]);
+  }, [selectedCurrency, sorting]);
 
   return (
     <>
       <section>
-        <Select
-          defaultValue="usd"
-          style={{ width: 120 }}
-          onChange={handleCurrencyChange}
-          options={[
-            { value: "usd", label: "USD" },
-            { value: "eur", label: "EUR" },
-          ]}
-        />
-        <Table
-          dataSource={data}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-          pagination={tableParams.pagination}
-          style={{ width: "100vw" }}
-          onChange={handleTableChange}
-        />
+        <Space direction="vertical" size={20}>
+          <Space size={15}>
+            <Select
+              defaultValue="usd"
+              style={{ width: 180 }}
+              onChange={handleCurrencyChange}
+              options={[
+                { value: "usd", label: "USD" },
+                { value: "eur", label: "EUR" },
+              ]}
+            />
+            <Select
+              defaultValue="desc"
+              style={{ width: 180 }}
+              onChange={handleSortingChange}
+              options={[
+                { value: "asc", label: "Market cap ascending" },
+                { value: "desc", label: "Market cap descending" },
+              ]}
+            />
+          </Space>
+
+          <Table
+            dataSource={data}
+            columns={columns}
+            loading={loading}
+            rowKey="id"
+            pagination={tableParams.pagination}
+            style={{ width: "100vw" }}
+            onChange={handleTableChange}
+          />
+        </Space>
       </section>
     </>
   );
